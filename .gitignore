@@ -1,0 +1,5 @@
+.vscode
+node_modules/
+contracts/*/.eosproj
+.idea/
+*.DS_Store

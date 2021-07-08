@@ -1,0 +1,27 @@
+{
+  "name": "colosseum.contracts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eosjs": "20.0.0",
+    "json": "^9.0.6",
+    "mocha": "^6.2.0",
+    "node-fetch": "^2.6.0"
+  },
+  "scripts": {
+    "nodeos": "nodeos --contracts-console",
+    "test": "mocha tests/**/*.js",
+    "test-single": "mocha"
+  },
+  "dependencies": {
+    "bignumber": "^1.1.0",
+    "bignumber.js": "^9.0.0",
+    "chai-as-promised": "^7.1.1",
+    "dotenv": "^8.0.0",
+    "eoslime": "0.0.15",
+    "faker": "^4.1.0",
+    "long": "^4.0.0"
+  }
+}
