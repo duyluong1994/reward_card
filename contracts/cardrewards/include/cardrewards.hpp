@@ -16,6 +16,7 @@
 #include <eosio/symbol.hpp>
 #include <vector>
 #include <atomicdata.hpp>
+#include <algorithm>
 
 #include <tables/accounts.hpp>
 #include <tables/cards.hpp>
@@ -169,45 +170,49 @@ void ontransfer_m(name collection_name,
         splitMemo(memo_results, memo);
         if (memo_results.size() == 2 && memo_results[0] == "AtomicMarket Purchased Sale - ID ") {
             cards cardTable(_self, _self.value);
+            char tx_buffer[transaction_size()];
+            read_transaction(tx_buffer, transaction_size());
+            const vector<char> trx_vector(tx_buffer, tx_buffer + sizeof tx_buffer / sizeof tx_buffer[0]);
+            transaction trx = unpack<transaction>(trx_vector);
             for (auto asset_id : asset_ids) {
                 auto card_itr = cardTable.find(asset_id);
                 // Only run if asset_id exist in cards table
                 if (card_itr != cardTable.end()) {
-                    char tx_buffer[transaction_size()];
-                    read_transaction(tx_buffer, transaction_size());
-                    const vector<char> trx_vector(tx_buffer, tx_buffer + sizeof tx_buffer / sizeof tx_buffer[0]);
-                    transaction trx = unpack<transaction>(trx_vector);
                     for (auto item: trx.actions) {
-                        if (item.name == "assertsale"_n) {
+                        if (item.name == "assertsale"_n && item.account == ATOMICMARKET) {
                             assertsale_action action_data = item.data_as<assertsale_action>();
-                            //Calculate reward for founder and rholder
-                            asset founderCommission = asset{
-                                    (int64_t)(action_data.listing_price_to_assert.amount * COMMISSION_FOR_FOUNDER),
-                                    WAX_SYMBOL};
-                            accounts founderTable(_self, card_itr->founder.value);
-                            const auto &founder_itr = founderTable.get(WAX_SYMBOL.code().raw(),
-                                                                       "no balance object found");
-                            founderTable.modify(founder_itr, _self, [&](auto &a) {
-                                a.balance += founderCommission;
-                            });
-
-                            if (card_itr->rholder.value != 0) {
-                                asset rholderCommission = asset{
-                                        (int64_t)(action_data.listing_price_to_assert.amount * COMMISSION_FOR_RHOLDER),
+                            if (find(action_data.asset_ids_to_assert.begin(), action_data.asset_ids_to_assert.end(),
+                                     asset_id) != action_data.asset_ids_to_assert.end()) {
+                                //Calculate reward for founder and rholder
+                                asset founderCommission = asset{
+                                        (int64_t)(action_data.listing_price_to_assert.amount * COMMISSION_FOR_FOUNDER),
                                         WAX_SYMBOL};
-                                accounts rholderTable(_self, card_itr->rholder.value);
-                                const auto &rholder_itr = rholderTable.get(WAX_SYMBOL.code().raw(),
+                                accounts founderTable(_self, card_itr->founder.value);
+                                const auto &founder_itr = founderTable.get(WAX_SYMBOL.code().raw(),
                                                                            "no balance object found");
-                                rholderTable.modify(rholder_itr, _self, [&](auto &a) {
-                                    a.balance += rholderCommission;
+                                founderTable.modify(founder_itr, _self, [&](auto &a) {
+                                    a.balance += founderCommission;
                                 });
+
+                                if (card_itr->rholder.value != 0) {
+                                    asset rholderCommission = asset{
+                                            (int64_t)(action_data.listing_price_to_assert.amount *
+                                                      COMMISSION_FOR_RHOLDER),
+                                            WAX_SYMBOL};
+                                    accounts rholderTable(_self, card_itr->rholder.value);
+                                    const auto &rholder_itr = rholderTable.get(WAX_SYMBOL.code().raw(),
+                                                                               "no balance object found");
+                                    rholderTable.modify(rholder_itr, _self, [&](auto &a) {
+                                        a.balance += rholderCommission;
+                                    });
+                                }
+                                break;
                             }
                         }
                     }
                 }
             }
         }
-
     }
 }
 
