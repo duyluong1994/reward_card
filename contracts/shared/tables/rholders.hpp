@@ -1,8 +1,10 @@
-//
-// Created by Lupo Solitario on 7/12/21.
-//
+#pragma once
 
-#ifndef COLOSSEUM_CARD_RHOLDERS_HPP
-#define COLOSSEUM_CARD_RHOLDERS_HPP
+struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] rholder {
+    name rholder;
+    asset balance;
 
-#endif //COLOSSEUM_CARD_RHOLDERS_HPP
+    uint64_t primary_key() const { return rholder.value; }
+};
+
+typedef eosio::multi_index<"rholders"_n, rholder> rholders;

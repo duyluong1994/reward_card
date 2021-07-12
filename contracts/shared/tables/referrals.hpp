@@ -1,8 +1,10 @@
-//
-// Created by Lupo Solitario on 7/12/21.
-//
+#pragma once
 
-#ifndef COLOSSEUM_CARD_REFERRALS_HPP
-#define COLOSSEUM_CARD_REFERRALS_HPP
+struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] referral {
+    name referral;
+    asset balance;
 
-#endif //COLOSSEUM_CARD_REFERRALS_HPP
+    uint64_t primary_key() const { return referral.value; }
+};
+
+typedef eosio::multi_index<"referrals"_n, referral> referrals;

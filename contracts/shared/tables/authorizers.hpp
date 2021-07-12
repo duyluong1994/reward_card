@@ -1,10 +1,10 @@
 #pragma once
 
-struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] authaccount {
-    name authorized;
+struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] authorizer {
+    name authorizer;
     uint64_t primary_key() const {
-        return authorized.value;
+        return authorizer.value;
     }
 };
 
-typedef eosio::multi_index<"authaccounts"_n, authaccount> authaccounts;
+typedef eosio::multi_index<"authorizers"_n, authorizer> authorizers;

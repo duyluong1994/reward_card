@@ -1,8 +1,24 @@
-//
-// Created by Lupo Solitario on 7/12/21.
-//
+#pragma once
 
-#ifndef COLOSSEUM_CARD_MAPPING_HPP
-#define COLOSSEUM_CARD_MAPPING_HPP
+struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] mapping {
+    name player_name;
+    name rholder;
+    name referral;
 
-#endif //COLOSSEUM_CARD_MAPPING_HPP
+    uint64_t primary_key() const {
+        return player_name.value;
+    }
+
+    uint64_t by_rholder() const {
+        return rholder.value;
+    }
+
+    uint64_t by_referral() const {
+        return referral.value;
+    }
+};
+
+typedef eosio::multi_index<"mappings"_n, mapping,
+        eosio::indexed_by<"rholder"_n, eosio::const_mem_fun < mapping, uint64_t, &mapping::by_rholder>>,
+eosio::indexed_by<"referral"_n, eosio::const_mem_fun<mapping, uint64_t, &mapping::by_referral>>>
+mappings;
