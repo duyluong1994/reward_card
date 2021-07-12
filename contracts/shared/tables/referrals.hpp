@@ -1,0 +1,8 @@
+//
+// Created by Lupo Solitario on 7/12/21.
+//
+
+#ifndef COLOSSEUM_CARD_REFERRALS_HPP
+#define COLOSSEUM_CARD_REFERRALS_HPP
+
+#endif //COLOSSEUM_CARD_REFERRALS_HPP
