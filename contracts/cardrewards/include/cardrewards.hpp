@@ -72,7 +72,8 @@ onmint(uint64_t asset_id,
        vector <asset> backed_tokens,
        ATTRIBUTE_MAP immutable_template_data) {
 
-    onmint_m(asset_id, collection_name, new_asset_owner, immutable_data, mutable_data);
+    onmint_m(asset_id, collection_name, template_id, new_asset_owner, immutable_data, mutable_data,
+             immutable_template_data);
 
 }
 
@@ -212,8 +213,10 @@ void claimref_m(name claimer, name referral) {
 
 }
 
-void onmint_m(uint64_t asset_id, name collection_name, name new_asset_owner, ATTRIBUTE_MAP immutable_data,
-              ATTRIBUTE_MAP mutable_data) {
+void onmint_m(uint64_t asset_id, name collection_name, int32_t template_id, name new_asset_owner,
+              ATTRIBUTE_MAP immutable_data,
+              ATTRIBUTE_MAP mutable_data,
+              ATTRIBUTE_MAP immutable_template_data) {
     //Check if collection_name is whitelisted
     whitecols whitecolsTable(_self, _self.value);
     auto itr = whitecolsTable.find(collection_name.value);
@@ -232,11 +235,19 @@ void onmint_m(uint64_t asset_id, name collection_name, name new_asset_owner, ATT
     cards cardTable(_self, _self.value);
     auto newAsset = cardTable.find(asset_id);
     check(newAsset == cardTable.end(), "This asset's existed.");
-    //read immutable data to get player_name then find rholder and referral via mapping table
-    auto player_itr = immutable_data.find("player_name");
-    check(player_itr != immutable_data.end(), "Missing player_name attribute in immutable_data.");
-    check(holds_alternative<string>(player_itr->second), "player_name must be type of string");
-    name player_name = name(get<string>(player_itr->second));
+    //read immutable data or immutable_template_data (if template_id >= 0) to get player_name then find rholder and referral via mapping table
+    name player_name = name();
+    if (template_id >= 0) {
+        auto player_itr = immutable_template_data.find("player_name");
+        check(player_itr != immutable_template_data.end(), "Missing player_name attribute in immutable_data.");
+        check(holds_alternative<string>(player_itr->second), "player_name must be type of string");
+        player_name = name(get<string>(player_itr->second));
+    } else {
+        auto player_itr = immutable_data.find("player_name");
+        check(player_itr != immutable_data.end(), "Missing player_name attribute in immutable_data.");
+        check(holds_alternative<string>(player_itr->second), "player_name must be type of string");
+        player_name = name(get<string>(player_itr->second));
+    }
 
     mappings mappingsTable(_self, _self.value);
     auto map_itr = mappingsTable.find(player_name.value);
